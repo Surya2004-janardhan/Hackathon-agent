@@ -2,6 +2,13 @@ const express = require("express");
 const app = express();
 const PORT = 3000;
 
+const {
+  analyzeInstagram,
+  analyzeLinkedIn,
+  analyzeYouTube,
+} = require("./prompts");
+
+
 // Example update function
 function update() {
   console.log("Update function executed at", new Date());
