@@ -2,8 +2,7 @@ const axios = require("axios");
 require("dotenv").config();
 
 // Replace with your key or use env
-const YOUTUBE_API_KEY = " AIzaSyAfP5pmFuaoy3qkqkJRxBbfkVtWz-jSY4Q "; // Your API Key
-const OPENAI_API_KEY = "sk-..."; // Optional: Add if using actual LLM
+const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY; // Your API Key
 
 // 1. Fetch YouTube Videos in last 48 hrs
 async function fetchYouTubePostsLast48Hrs(channelId) {
@@ -56,18 +55,8 @@ async function getVideoDetails(videoIds) {
   }));
 }
 
-// 3. Mock summary generator (replace with OpenAI if needed)
-async function generateSummary(videoData) {
-  return (
-    `In the last 48 hours, ${videoData.length} videos were posted.\n` +
-    videoData
-      .map((v) => `• ${v.title} (${v.views} views, ${v.likes} likes)`)
-      .join("\n")
-  );
-}
-
 // 4. Main Orchestrator
-async function processYouTubeChannel(channelId) {
+export async function youtubeScrapper(channelId) {
   const recent = await fetchYouTubePostsLast48Hrs(channelId);
   if (recent.length === 0) return console.log("No videos in last 48 hrs.");
 
@@ -78,7 +67,5 @@ async function processYouTubeChannel(channelId) {
 
   console.log("\n📺 Summary Report:");
   console.log(summary);
+  return summary;
 }
-
-// ▶️ Run Example with Google Developers Channel
-processYouTubeChannel("UCq-Fj5jknLsUf-MWSy4_brA");

@@ -3,7 +3,7 @@ const fs = require("fs");
 const cheerio = require("cheerio");
 const { Parser } = require("json2csv");
 
-async function scrapeLinkedInPosts() {
+export async function linkedinScrapper(profileUrl) {
   const cookies = JSON.parse(fs.readFileSync("linkedin-cookies.json", "utf8"));
 
   const browser = await puppeteer.launch({
@@ -17,10 +17,6 @@ async function scrapeLinkedInPosts() {
 
   console.log("✅ Logged in using cookies...");
 
-  const profileUrl =
-    "https://www.linkedin.com/in/surya-janardhan-chintala-a19403254/recent-activity/all/";
-  // "https://www.linkedin.com/in/sundarpichai/";
-  // "https://www.linkedin.com/company/growstack-inc/posts/";
   await page.goto(profileUrl, {
     waitUntil: "domcontentloaded",
     timeout: 60000,
@@ -94,11 +90,12 @@ async function scrapeLinkedInPosts() {
   if (posts.length > 0) {
     const parser = new Parser();
     const csv = parser.parse(posts);
-    fs.writeFileSync("linkedin_posts.json", JSON.stringify(posts, null, 2));
-    console.log("✅ Data saved to linkedin_posts.csv");
+    // fs.writeFileSync("linkedin_posts.json", JSON.stringify(posts, null, 2));
+
+    // console.log("✅ Data saved to linkedin_posts.csv");
+    const posts = JSON.stringify(posts, null, 2);
+    return post;
   } else {
     console.log("⚠️ No posts found to save.");
   }
 }
-
-scrapeLinkedInPosts();

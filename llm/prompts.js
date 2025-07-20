@@ -1,6 +1,6 @@
 // Social Media Analysis Prompts - JSON Only Output
 
-export function analyzeLinkedIn(data) {
+export function linkedinPrompt(data) {
   const prompt = `SYSTEM: Professional LinkedIn content analyst. Output ONLY valid JSON.
 
 ANALYSIS METHODOLOGY:
@@ -68,7 +68,7 @@ REQUIRED JSON OUTPUT:
   return prompt;
 }
 
-export function analyzeYouTube(data) {
+export function youtubePrompt(data) {
   const prompt = `SYSTEM: YouTube content strategist. Output ONLY valid JSON.
 
 ANALYSIS METHODOLOGY:
@@ -140,7 +140,7 @@ REQUIRED JSON OUTPUT:
   return prompt;
 }
 
-export function analyzeInstagram(data) {
+export function instagramPrompt(data) {
   const prompt = `SYSTEM: Instagram growth specialist. Output ONLY valid JSON.
 
 ANALYSIS METHODOLOGY:

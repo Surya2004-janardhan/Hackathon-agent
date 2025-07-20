@@ -1,6 +1,6 @@
 const puppeteer = require("puppeteer");
 
-async function scrapeInstagramDetailed(username) {
+export async function instagramScrapper(username) {
   const browser = await puppeteer.launch({
     headless: false,
     defaultViewport: null,
@@ -55,4 +55,3 @@ async function scrapeInstagramDetailed(username) {
   }
 }
 
-scrapeInstagramDetailed("tseries.official");
