@@ -1,35 +1,36 @@
 const mongoose = require("mongoose");
-const userschema = mongoose.model("User", {
+
+const userschema = new mongoose.Schema({
   username: {
     type: String,
     required: true,
     unique: true,
   },
-  password: {
-    type: String,
-    required: true,
+
+  socialMedia: {
+    instagram: {
+      handle: { type: String, default: "" },
+      response: { type: Array, default: [] },
+    },
+    linkedin: {
+      handle: { type: String, default: "" },
+      response: { type: Array, default: [] },
+    },
+    youtube: {
+      handle: { type: String, default: "" },
+      response: { type: Array, default: [] },
+    },
   },
-  instagramResponse: {
-    type: String,
-    default: "",
-  },
-  linkedinResponse: {
-    type: String,
-    default: "",
-  },
-  youtubeResponse: {
-    type: String,
-    default: "",
-  },
-  createdAt: {
-    type: Date,
-    default: "",
-  },
+
   summary: {
     type: Array,
-    default: "",
+    default: [],
   },
-  // Add other fields as needed
+
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
 });
 
 module.exports = mongoose.model("User", userschema);

@@ -56,7 +56,7 @@ async function getVideoDetails(videoIds) {
 }
 
 // 4. Main Orchestrator
-export async function youtubeScrapper(channelId) {
+async function youtubeScrapper(channelId) {
   const recent = await fetchYouTubePostsLast48Hrs(channelId);
   if (recent.length === 0) return console.log("No videos in last 48 hrs.");
 
@@ -69,3 +69,5 @@ export async function youtubeScrapper(channelId) {
   console.log(summary);
   return summary;
 }
+
+module.exports = { youtubeScrapper };

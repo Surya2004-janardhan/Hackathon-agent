@@ -1,6 +1,6 @@
 const puppeteer = require("puppeteer");
 
-export async function instagramScrapper(username) {
+ async function instagramScrapper(username) {
   const browser = await puppeteer.launch({
     headless: false,
     defaultViewport: null,
@@ -54,4 +54,6 @@ export async function instagramScrapper(username) {
     await browser.close();
   }
 }
+
+module.exports = { instagramScrapper };
 

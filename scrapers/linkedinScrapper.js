@@ -3,7 +3,7 @@ const fs = require("fs");
 const cheerio = require("cheerio");
 const { Parser } = require("json2csv");
 
-export async function linkedinScrapper(profileUrl) {
+ async function linkedinScrapper(profileUrl) {
   const cookies = JSON.parse(fs.readFileSync("linkedin-cookies.json", "utf8"));
 
   const browser = await puppeteer.launch({
@@ -99,3 +99,5 @@ export async function linkedinScrapper(profileUrl) {
     console.log("⚠️ No posts found to save.");
   }
 }
+
+module.exports= {linkedinScrapper};

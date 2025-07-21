@@ -2,7 +2,7 @@
 const Groq = require("groq-sdk")
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
- export async function getGroqChatCompletion(prompt) {
+  async function getGroqChatCompletion(prompt) {
     const respone = await  groq.chat.completions.create({
         messages: [
       {
@@ -17,4 +17,4 @@ return respone
 //   console.log(chatCompletion.choices[0]?.message?.content || "");
 
 }
-
+module.exports = {  getGroqChatCompletion } 
