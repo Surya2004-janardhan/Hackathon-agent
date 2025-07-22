@@ -1,4 +1,4 @@
-# 📊 AI TrendWatcher – 48hr Influencer & Competitor Tracker
+# 📊 AI Monitor – 48hr Influencer & Competitor Tracker
 
 ## 🚀 Overview
 
