@@ -111,6 +111,7 @@ app.post("/analyze-linkedin", async (req, res) => {
   }
 
   await user.save();
+  console.log(response);
   res.status(200).json(response);
 });
 
@@ -162,17 +163,26 @@ app.post("/created-at", async (req, res) => {
 });
 
 app.get("/previous-data", async (req, res) => {
-  console.log("[GET /previous-data] Entry:", req.query);
-  const { username } = req.query;
-  const user = await User.findOne({ username });
+  const username = req.query.username;
+  console.log("[GET /previous-data] Entry:", username);
 
-  if (user) {
-    res.json(user.socialMedia);
-    console.log("[GET /previous-data] Response sent");
-  } else {
-    console.log("[GET /previous-data] User not found");
-    res.status(404).json({ message: "User not found" });
-    console.log("[GET /previous-data] Response sent: User not found");
+  if (!username) {
+    return res
+      .status(400)
+      .json({ error: "Username query parameter is required." });
+  }
+
+  try {
+    const user = await User.findOne({ username });
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.status(200).json(user);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 

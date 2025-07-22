@@ -1,32 +1,41 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useRef, useState } from "react";
 import { Clock, Play, Pause, RotateCcw, CheckCircle } from 'lucide-react';
+import { useApi } from "../hooks/useApi";
 
-const AutoUpdateTimer = ({ onAutoUpdate }) => {
-  const [timeLeft, setTimeLeft] = useState(48 * 60 * 60); // 48 hours in seconds
-  const [isRunning, setIsRunning] = useState(false);
+const AutoUpdateTimer = ({ username, email, handles, onAutoUpdate }) => {
+  const { analyzeInstagram, analyzeLinkedin, analyzeYoutube, sendDataNow } = useApi();
+  const [seconds, setSeconds] = useState(48 * 60 * 60);
+  const [running, setRunning] = useState(false);
+  const intervalRef = useRef();
   const [lastUpdate, setLastUpdate] = useState(null);
 
   useEffect(() => {
-    let interval = null;
-    
-    if (isRunning && timeLeft > 0) {
-      interval = setInterval(() => {
-        setTimeLeft(time => {
-          if (time <= 1) {
-            setIsRunning(false);
-            setLastUpdate(new Date());
-            onAutoUpdate();
-            return 48 * 60 * 60; // Reset to 48 hours
+    if (running) {
+      intervalRef.current = setInterval(() => {
+        setSeconds((s) => {
+          if (s <= 1) {
+            setRunning(false);
+            handleAutoUpdate();
+            return 48 * 60 * 60;
           }
-          return time - 1;
+          return s - 1;
         });
       }, 1000);
-    } else if (!isRunning) {
-      clearInterval(interval);
     }
-    
-    return () => clearInterval(interval);
-  }, [isRunning, timeLeft, onAutoUpdate]);
+    return () => clearInterval(intervalRef.current);
+  }, [running]);
+
+  const handleAutoUpdate = async () => {
+    if (handles.instagram)
+      await analyzeInstagram(handles.instagram, username);
+    if (handles.linkedin)
+      await analyzeLinkedin(handles.linkedin, username);
+    if (handles.youtube)
+      await analyzeYoutube(handles.youtube, username);
+    await sendDataNow(username, email);
+    setLastUpdate(new Date());
+    if (onAutoUpdate) onAutoUpdate();
+  };
 
   const formatTime = (seconds) => {
     const hours = Math.floor(seconds / 3600);
@@ -35,14 +44,14 @@ const AutoUpdateTimer = ({ onAutoUpdate }) => {
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const handleStart = () => setIsRunning(true);
-  const handlePause = () => setIsRunning(false);
+  const handleStart = () => setRunning(true);
+  const handlePause = () => setRunning(false);
   const handleReset = () => {
-    setIsRunning(false);
-    setTimeLeft(48 * 60 * 60);
+    setRunning(false);
+    setSeconds(48 * 60 * 60);
   };
 
-  const progress = ((48 * 60 * 60 - timeLeft) / (48 * 60 * 60)) * 100;
+  const progress = ((48 * 60 * 60 - seconds) / (48 * 60 * 60)) * 100;
 
   return (
     <div className="bg-white rounded-xl shadow-lg p-6">
@@ -60,7 +69,7 @@ const AutoUpdateTimer = ({ onAutoUpdate }) => {
         {/* Timer Display */}
         <div className="text-center">
           <div className="text-4xl font-mono font-bold text-gray-800 mb-2">
-            {formatTime(timeLeft)}
+            {formatTime(seconds)}
           </div>
           <div className="w-full bg-gray-200 rounded-full h-3 mb-4">
             <div 
@@ -69,13 +78,13 @@ const AutoUpdateTimer = ({ onAutoUpdate }) => {
             ></div>
           </div>
           <p className="text-sm text-gray-600">
-            {isRunning ? 'Timer is running' : 'Timer is paused'}
+            {running ? 'Timer is running' : 'Timer is paused'}
           </p>
         </div>
 
         {/* Control Buttons */}
         <div className="flex space-x-3">
-          {!isRunning ? (
+          {!running ? (
             <button
               onClick={handleStart}
               className="flex-1 bg-gradient-to-r from-green-500 to-green-600 text-white py-3 px-4 rounded-lg hover:from-green-600 hover:to-green-700 transition-all duration-200 font-medium flex items-center justify-center space-x-2"

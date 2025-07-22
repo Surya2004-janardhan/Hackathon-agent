@@ -90,22 +90,15 @@ export const useApi = () => {
     console.log("[useApi] /created-at API response:", result);
     return result;
   };
-
-  const getOverallSummary = async (username) => {
-    console.log("[useApi] Calling /overall-summary API with:", username);
-    const result = await callApi("/overall-summary", { username });
-    console.log("[useApi] /overall-summary API response:", result);
-    return result;
-  };
-
   const getPreviousData = async (username) => {
     console.log("[useApi] Calling /previous-data API with:", username);
-    // Use query param for GET
+
     const result = await callApi(
-      `/previous-data?username=${username}`,
-      null,
+      `/previous-data?username=${encodeURIComponent(username)}`,
+      null, // no body
       "GET"
     );
+
     console.log("[useApi] /previous-data API response:", result);
     return result;
   };
@@ -133,7 +126,7 @@ export const useApi = () => {
     analyzeLinkedin,
     analyzeYoutube,
     updateCreatedAt,
-    getOverallSummary,
+
     getPreviousData,
     sendDataNow,
   };

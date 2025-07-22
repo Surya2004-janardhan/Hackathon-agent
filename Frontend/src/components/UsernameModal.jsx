@@ -1,23 +1,30 @@
 import React, { useState, useEffect } from 'react';
 import { User } from 'lucide-react';
+import { useApi } from '../hooks/useApi';
 
 const USERNAME_KEY = 'leadsagent_username';
+const EMAIL_KEY = 'leadsagent_email';
 
 const UsernameModal = ({ isOpen, onSubmit }) => {
   const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
+  const { createOrFetchUser } = useApi();
 
   // On mount, check localStorage for username
   useEffect(() => {
-    const stored = localStorage.getItem(USERNAME_KEY);
-    if (stored) setUsername(stored);
+    const storedUsername = localStorage.getItem(USERNAME_KEY);
+    const storedEmail = localStorage.getItem(EMAIL_KEY);
+    if (storedUsername) setUsername(storedUsername);
+    if (storedEmail) setEmail(storedEmail);
   }, []);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (username.trim()) {
-      localStorage.setItem(USERNAME_KEY, username.trim());
-      onSubmit(username.trim());
-    }
+    if (!username.trim()) return;
+    await createOrFetchUser(username.trim());
+    localStorage.setItem(USERNAME_KEY, username.trim());
+    localStorage.setItem(EMAIL_KEY, email.trim());
+    onSubmit(username.trim(), email.trim());
   };
 
   if (!isOpen) return null;
@@ -45,6 +52,20 @@ const UsernameModal = ({ isOpen, onSubmit }) => {
               placeholder="Your username"
               required
               autoFocus
+            />
+          </div>
+          <div className="mb-6">
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+              Enter your email
+            </label>
+            <input
+              type="email"
+              id="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              placeholder="Your email"
+              required
             />
           </div>
           <button

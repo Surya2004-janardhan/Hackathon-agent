@@ -1,24 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { Toaster, toast } from 'react-hot-toast';
 import UsernameModal from './components/UsernameModal';
-import UserSummary from './components/UserSummary';
 import AnalyzeForm from './components/AnalyzeForm';
 import PreviousData from './components/PreviousData';
 import AutoUpdateTimer from './components/AutoUpdateTimer';
 import { useApi } from './hooks/useApi';
 
 const USERNAME_KEY = 'leadsagent_username';
+const EMAIL_KEY = 'leadsagent_email';
 
 function App() {
-  const [username, setUsername] = useState('');
-  const [showModal, setShowModal] = useState(true);
-  const [userSummary, setUserSummary] = useState(null);
-  const [previousData, setPreviousData] = useState([]);
+  const [username, setUsername] = useState(localStorage.getItem(USERNAME_KEY));
+  const [email, setEmail] = useState(localStorage.getItem(EMAIL_KEY));
+  const [showModal, setShowModal] = useState(!username);
+  const [handles, setHandles] = useState({});
+  const [refresh, setRefresh] = useState(0);
   const [analysisResults, setAnalysisResults] = useState(null);
+  const [previousData, setPreviousData] = useState(null);
+  const { loading, analyzeProfiles, sendMail, getPreviousData, autoUpdate, sendDataNow } = useApi();
+// localStorage.clear();
 
-  const { loading, getUserSummary, analyzeProfiles, sendMail, getPreviousData, autoUpdate } = useApi();
-
-  // Fetch username from localStorage on mount
   useEffect(() => {
     const stored = localStorage.getItem(USERNAME_KEY);
     if (stored) {
@@ -35,21 +36,18 @@ function App() {
 
   const loadUserData = async () => {
     try {
-      const [summaryResponse, dataResponse] = await Promise.all([
-        getUserSummary(localStorage.getItem(USERNAME_KEY)),
-        getPreviousData(localStorage.getItem(USERNAME_KEY))
-      ]);
-      setUserSummary(summaryResponse.data);
+      const dataResponse = await getPreviousData(localStorage.getItem(USERNAME_KEY));
       setPreviousData(dataResponse.data);
     } catch (error) {
       toast.error('Failed to load user data');
     }
   };
 
-  const handleUsernameSubmit = async (inputUsername) => {
-    setUsername(inputUsername);
+  const handleModalSubmit = (uname, mail) => {
+    setUsername(uname);
+    setEmail(mail);
     setShowModal(false);
-    toast.success(`Welcome, ${inputUsername}!`);
+    toast.success(`Welcome, ${uname}!`);
   };
 
   const handleAnalyze = async (formData) => {
@@ -57,7 +55,6 @@ function App() {
       const response = await analyzeProfiles(formData);
       setAnalysisResults(response.data);
       toast.success('Analysis completed successfully!');
-      // Auto fetch previous data after analysis
       await loadUserData();
       console.log("[App] Previous data auto-fetched after analysis.");
     } catch (error) {
@@ -77,21 +74,17 @@ function App() {
       toast.error('Failed to send mail. Please try again.');
     }
   };
-  
-
 
   const handleAutoUpdate = async () => {
     try {
       await autoUpdate(previousData);
       toast.success('Auto update completed!');
-      // Refresh data after auto update
       loadUserData();
     } catch (error) {
       toast.error('Auto update failed');
     }
   };
 
-  // Add a manual refresh function for previous data
   const handleRefreshPreviousData = async () => {
     try {
       const storedUsername = localStorage.getItem(USERNAME_KEY);
@@ -113,7 +106,7 @@ function App() {
       <Toaster position="top-right" />
       <UsernameModal 
         isOpen={showModal} 
-        onSubmit={handleUsernameSubmit} 
+        onSubmit={handleModalSubmit} 
       />
 
       {/* Navbar */}
@@ -145,15 +138,11 @@ function App() {
               </button>
             </div>
 
-            {/* User Summary */}
-            {userSummary && (
-              <UserSummary username={username} summary={userSummary} />
-            )}
-
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               {/* Left Column - Analysis Form */}
               <div className="lg:col-span-2 space-y-8">
                 <AnalyzeForm 
+                  username={username} // <-- Pass username here
                   onAnalyze={handleAnalyze}
                   onSendMail={handleSendMail}
                   isLoading={loading}
@@ -184,7 +173,7 @@ function App() {
                 )}
 
                 {/* Previous Data */}
-                <PreviousData data={previousData} />
+                <PreviousData username={username} refresh={refresh} />
               </div>
 
               {/* Right Column - Auto Update Timer */}
