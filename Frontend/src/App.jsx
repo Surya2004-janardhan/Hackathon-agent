@@ -7,14 +7,25 @@ import PreviousData from './components/PreviousData';
 import AutoUpdateTimer from './components/AutoUpdateTimer';
 import { useApi } from './hooks/useApi';
 
+const USERNAME_KEY = 'leadsagent_username';
+
 function App() {
   const [username, setUsername] = useState('');
   const [showModal, setShowModal] = useState(true);
   const [userSummary, setUserSummary] = useState(null);
   const [previousData, setPreviousData] = useState([]);
   const [analysisResults, setAnalysisResults] = useState(null);
-  
+
   const { loading, getUserSummary, analyzeProfiles, sendMail, getPreviousData, autoUpdate } = useApi();
+
+  // Fetch username from localStorage on mount
+  useEffect(() => {
+    const stored = localStorage.getItem(USERNAME_KEY);
+    if (stored) {
+      setUsername(stored);
+      setShowModal(false);
+    }
+  }, []);
 
   useEffect(() => {
     if (username) {
@@ -25,10 +36,9 @@ function App() {
   const loadUserData = async () => {
     try {
       const [summaryResponse, dataResponse] = await Promise.all([
-        getUserSummary(username),
-        getPreviousData(username)
+        getUserSummary(localStorage.getItem(USERNAME_KEY)),
+        getPreviousData(localStorage.getItem(USERNAME_KEY))
       ]);
-      
       setUserSummary(summaryResponse.data);
       setPreviousData(dataResponse.data);
     } catch (error) {
@@ -47,10 +57,9 @@ function App() {
       const response = await analyzeProfiles(formData);
       setAnalysisResults(response.data);
       toast.success('Analysis completed successfully!');
-      
-      // Refresh previous data
-      const dataResponse = await getPreviousData(username);
-      setPreviousData(dataResponse.data);
+      // Auto fetch previous data after analysis
+      await loadUserData();
+      console.log("[App] Previous data auto-fetched after analysis.");
     } catch (error) {
       toast.error('Analysis failed. Please try again.');
     }
@@ -68,12 +77,13 @@ function App() {
       toast.error('Failed to send mail. Please try again.');
     }
   };
+  
+
 
   const handleAutoUpdate = async () => {
     try {
       await autoUpdate(previousData);
       toast.success('Auto update completed!');
-      
       // Refresh data after auto update
       loadUserData();
     } catch (error) {
@@ -81,24 +91,58 @@ function App() {
     }
   };
 
+  // Add a manual refresh function for previous data
+  const handleRefreshPreviousData = async () => {
+    try {
+      const storedUsername = localStorage.getItem(USERNAME_KEY);
+      if (!storedUsername) {
+        toast.error('No username found in localStorage.');
+        return;
+      }
+      const dataResponse = await getPreviousData(storedUsername);
+      setPreviousData(dataResponse.data);
+      toast.success('Previous data refreshed!');
+      console.log("[App] Previous data manually refreshed:", dataResponse.data);
+    } catch (error) {
+      toast.error('Failed to refresh previous data');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       <Toaster position="top-right" />
-      
       <UsernameModal 
         isOpen={showModal} 
         onSubmit={handleUsernameSubmit} 
       />
-      
+
+      {/* Navbar */}
       {username && (
-        <div className="container mx-auto px-4 py-8">
-          <div className="max-w-7xl mx-auto">
-            {/* Header */}
+        <nav className="w-full bg-white shadow-md py-4 px-8 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="text-3xl">👋</span>
+            <span className="text-2xl font-extrabold text-blue-700">Hi, {username}</span>
+          </div>
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            Social Media Analytics Dashboard
+          </h1>
+        </nav>
+      )}
+
+      {/* Main Body */}
+      {username && (
+        <div className="container mx-auto px-4 py-8 flex justify-center">
+          <div className="max-w-7xl w-full">
             <div className="text-center mb-8">
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
-                Social Media Analytics Dashboard
-              </h1>
-              <p className="text-gray-600">Comprehensive analysis and insights for your social media presence</p>
+              <p className="text-gray-600 text-lg">
+                Comprehensive analysis and insights for your social media presence
+              </p>
+              <button
+                onClick={handleRefreshPreviousData}
+                className="mt-4 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg shadow transition-all duration-200 font-semibold"
+              >
+                Refresh Previous Data
+              </button>
             </div>
 
             {/* User Summary */}

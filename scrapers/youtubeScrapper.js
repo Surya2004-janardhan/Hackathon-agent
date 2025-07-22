@@ -63,11 +63,11 @@ async function youtubeScrapper(channelId) {
   const videoIds = recent.map((v) => v.videoId);
   const details = await getVideoDetails(videoIds);
   console.log(details);
-  const summary = await generateSummary(details);
+  // const summary = await generateSummary(details);
 
   console.log("\n📺 Summary Report:");
-  console.log(summary);
-  return summary;
+  // console.log(summary);
+  return details;
 }
 
 module.exports = { youtubeScrapper };

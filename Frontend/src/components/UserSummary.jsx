@@ -1,7 +1,11 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { User, TrendingUp, Calendar, Award } from 'lucide-react';
 
 const UserSummary = ({ username, summary }) => {
+  useEffect(() => {
+    console.log("[UserSummary] Rendering with data:", { username, summary });
+  }, [username, summary]);
+
   return (
     <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
       <div className="flex items-center space-x-4 mb-6">

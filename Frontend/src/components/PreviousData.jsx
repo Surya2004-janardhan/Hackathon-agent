@@ -1,7 +1,28 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Calendar, TrendingUp, Users, Eye, Heart, MessageCircle } from 'lucide-react';
+import { useApi } from '../hooks/useApi';
 
-const PreviousData = ({ data }) => {
+const USERNAME_KEY = 'leadsagent_username';
+
+const PreviousData = ({ username: propUsername }) => {
+  const { getPreviousData, loading, error } = useApi();
+  const [data, setData] = useState([]);
+  const username = propUsername || localStorage.getItem(USERNAME_KEY);
+
+  useEffect(() => {
+    if (username) {
+      console.log('[PreviousData] Fetching previous data for:', username);
+      getPreviousData(username)
+        .then((result) => {
+          console.log('[PreviousData] Data fetched:', result);
+          setData(result);
+        })
+        .catch((err) => {
+          console.log('[PreviousData] Error fetching data:', err);
+        });
+    }
+  }, [username, getPreviousData]);
+
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -24,6 +45,9 @@ const PreviousData = ({ data }) => {
         return <TrendingUp className="w-8 h-8 text-gray-600" />;
     }
   };
+
+  if (loading) return <div>Loading previous data...</div>;
+  if (error) return <div>Error: {error}</div>;
 
   if (!data || data.length === 0) {
     return (

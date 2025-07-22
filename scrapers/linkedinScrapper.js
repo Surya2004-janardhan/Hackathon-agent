@@ -3,11 +3,11 @@ const fs = require("fs");
 const cheerio = require("cheerio");
 const { Parser } = require("json2csv");
 
- async function linkedinScrapper(profileUrl) {
+async function linkedinScrapper(profileUrl) {
   const cookies = JSON.parse(fs.readFileSync("linkedin-cookies.json", "utf8"));
 
   const browser = await puppeteer.launch({
-    headless: false,
+    headless: true,
     args: ["--start-maximized"],
   });
 
@@ -93,11 +93,12 @@ const { Parser } = require("json2csv");
     // fs.writeFileSync("linkedin_posts.json", JSON.stringify(posts, null, 2));
 
     // console.log("✅ Data saved to linkedin_posts.csv");
-    const posts = JSON.stringify(posts, null, 2);
-    return post;
+    const postsJson = JSON.stringify(posts, null, 2);
+    return posts; // Return the posts array, not 'post' or 'postsJson'
   } else {
     console.log("⚠️ No posts found to save.");
+    return []; // Return empty array if no posts
   }
 }
 
-module.exports= {linkedinScrapper};
+module.exports = { linkedinScrapper };

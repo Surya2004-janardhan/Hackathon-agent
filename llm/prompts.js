@@ -24,7 +24,7 @@ RULES:
 
 ANALYZE: ${JSON.stringify(data)}
 
-REQUIRED JSON OUTPUT:
+REQUIRED JSON OUTPUT with no spaces extra or /n any other type of extra charectors just add emojes if needed:
 {
   "professional_themes": ["theme1", "theme2", "theme3"],
   "most_engaging_post": {
@@ -93,7 +93,7 @@ RULES:
 
 ANALYZE: ${JSON.stringify(data)}
 
-REQUIRED JSON OUTPUT:
+REQUIRED JSON OUTPUT with no spaces extra or /n any other type of extra charectors just add emojes if needed:
 {
   "content_categories": ["category1", "category2", "category3"],
   "most_engaging_video": {
@@ -166,7 +166,7 @@ RULES:
 
 ANALYZE: ${JSON.stringify(data)}
 
-REQUIRED JSON OUTPUT:
+REQUIRED JSON OUTPUT with no spaces extra or /n any other type of extra charectors just add emojes if needed:
 {
   "visual_themes": ["theme1", "theme2", "theme3"],
   "most_engaging_post": {

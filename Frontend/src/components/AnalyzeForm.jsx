@@ -1,7 +1,22 @@
 import React, { useState } from 'react';
 import { Linkedin, Instagram, Youtube, Send, Mail, Loader2, X } from 'lucide-react';
+import { useApi } from '../hooks/useApi';
 
-const AnalyzeForm = ({ onAnalyze, onSendMail, isLoading }) => {
+const USERNAME_KEY = 'leadsagent_username';
+
+const AnalyzeForm = ({ username: propUsername, onAnalyze, onSendMail, isLoading }) => {
+  const {
+    analyzeLinkedin,
+    analyzeInstagram,
+    analyzeYoutube,
+    loading,
+    error,
+    createOrFetchUser,
+  } = useApi();
+
+  // Always get username from props or localStorage
+  const username = propUsername || localStorage.getItem(USERNAME_KEY);
+
   const [formData, setFormData] = useState({
     linkedin: '',
     linkedinType: 'single',
@@ -15,25 +30,44 @@ const AnalyzeForm = ({ onAnalyze, onSendMail, isLoading }) => {
     youtube: true
   });
 
-  const handleSubmit = (e) => {
+  const [analyzeLoading, setAnalyzeLoading] = useState(false);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const hasData = (visibleInputs.linkedin && formData.linkedin) || 
-                    (visibleInputs.instagram && formData.instagram) || 
+    const hasData = (visibleInputs.linkedin && formData.linkedin) ||
+                    (visibleInputs.instagram && formData.instagram) ||
                     (visibleInputs.youtube && formData.youtube);
+
     if (hasData) {
-      // Only send data for visible inputs
-      const filteredData = {};
-      if (visibleInputs.linkedin && formData.linkedin) {
-        filteredData.linkedin = formData.linkedin;
-        filteredData.linkedinType = formData.linkedinType;
+      setAnalyzeLoading(true);
+      const results = {};
+      try {
+        // Ensure user exists in DB before analysis
+        console.log("[AnalyzeForm] Ensuring user exists in DB...");
+        await createOrFetchUser(username);
+
+        if (visibleInputs.linkedin && formData.linkedin) {
+          console.log("[AnalyzeForm] Calling LinkedIn analysis API");
+          const linkedinRes = await analyzeLinkedin(formData.linkedin, username);
+          results.linkedin = linkedinRes;
+        }
+        if (visibleInputs.instagram && formData.instagram) {
+          console.log("[AnalyzeForm] Calling Instagram analysis API");
+          const instagramRes = await analyzeInstagram(formData.instagram, username);
+          results.instagram = instagramRes;
+        }
+        if (visibleInputs.youtube && formData.youtube) {
+          console.log("[AnalyzeForm] Calling YouTube analysis API");
+          const youtubeRes = await analyzeYoutube(formData.youtube, username);
+          results.youtube = youtubeRes;
+        }
+        console.log("[AnalyzeForm] All analysis results:", results);
+        onAnalyze(results);
+      } catch (err) {
+        console.log("[AnalyzeForm] Error during analysis:", err);
+      } finally {
+        setAnalyzeLoading(false);
       }
-      if (visibleInputs.instagram && formData.instagram) {
-        filteredData.instagram = formData.instagram;
-      }
-      if (visibleInputs.youtube && formData.youtube) {
-        filteredData.youtube = formData.youtube;
-      }
-      onAnalyze(filteredData);
     }
   };
 
@@ -54,8 +88,8 @@ const AnalyzeForm = ({ onAnalyze, onSendMail, isLoading }) => {
     }
   };
 
-  const hasData = (visibleInputs.linkedin && formData.linkedin) || 
-                  (visibleInputs.instagram && formData.instagram) || 
+  const hasData = (visibleInputs.linkedin && formData.linkedin) ||
+                  (visibleInputs.instagram && formData.instagram) ||
                   (visibleInputs.youtube && formData.youtube);
 
   return (
@@ -164,19 +198,53 @@ const AnalyzeForm = ({ onAnalyze, onSendMail, isLoading }) => {
           </div>
         )}
 
+        {/* Add buttons for removed inputs */}
+        <div className="flex space-x-2 pt-2">
+          {!visibleInputs.linkedin && (
+            <button
+              type="button"
+              onClick={() => setVisibleInputs(prev => ({ ...prev, linkedin: true }))}
+              className="bg-blue-100 text-blue-700 px-3 py-2 rounded flex items-center space-x-1 hover:bg-blue-200 transition"
+            >
+              <Linkedin className="w-4 h-4" />
+              <span>Add LinkedIn</span>
+            </button>
+          )}
+          {!visibleInputs.instagram && (
+            <button
+              type="button"
+              onClick={() => setVisibleInputs(prev => ({ ...prev, instagram: true }))}
+              className="bg-pink-100 text-pink-700 px-3 py-2 rounded flex items-center space-x-1 hover:bg-pink-200 transition"
+            >
+              <Instagram className="w-4 h-4" />
+              <span>Add Instagram</span>
+            </button>
+          )}
+          {!visibleInputs.youtube && (
+            <button
+              type="button"
+              onClick={() => setVisibleInputs(prev => ({ ...prev, youtube: true }))}
+              className="bg-red-100 text-red-700 px-3 py-2 rounded flex items-center space-x-1 hover:bg-red-200 transition"
+            >
+              <Youtube className="w-4 h-4" />
+              <span>Add YouTube</span>
+            </button>
+          )}
+        </div>
+
         {/* Action Buttons */}
         <div className="flex space-x-4 pt-4">
           <button
             type="submit"
-            disabled={!hasData || isLoading}
+            disabled={!hasData || isLoading || analyzeLoading}
             className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 px-6 rounded-lg hover:from-blue-600 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-medium flex items-center justify-center space-x-2"
           >
-            {isLoading ? (
+            {(isLoading || analyzeLoading) ? (
               <Loader2 className="w-5 h-5 animate-spin" />
             ) : (
               <Send className="w-5 h-5" />
             )}
-            <span>{isLoading ? 'Analyzing...' : 'Analyze'}</span>
+            <span>{(isLoading || analyzeLoading) ? 'Analyzing...' : 'Analyze'}</span>
           </button>
           
           <button

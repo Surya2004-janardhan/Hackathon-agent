@@ -8,18 +8,24 @@ const userschema = new mongoose.Schema({
   },
 
   socialMedia: {
-    instagram: {
-      handle: { type: String, default: "" },
-      response: { type: Array, default: [] },
-    },
-    linkedin: {
-      handle: { type: String, default: "" },
-      response: { type: Array, default: [] },
-    },
-    youtube: {
-      handle: { type: String, default: "" },
-      response: { type: Array, default: [] },
-    },
+    instagram: [
+      {
+        handle: { type: String, required: true },
+        responses: { type: [Object], default: [] },
+      },
+    ],
+    linkedin: [
+      {
+        handle: { type: String, required: true },
+        responses: { type: [Object], default: [] },
+      },
+    ],
+    youtube: [
+      {
+        handle: { type: String, required: true },
+        responses: { type: [Object], default: [] },
+      },
+    ],
   },
 
   summary: {
